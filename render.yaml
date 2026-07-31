@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: tennis-live-scores
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: RAPIDAPI_HOST
+        value: tennis-api-atp-wta-itf.p.rapidapi.com
+      - key: MATCHSTAT_SOCKET_URL
+        value: https://live.matchstat.com
