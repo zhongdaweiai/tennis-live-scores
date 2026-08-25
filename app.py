@@ -26,6 +26,8 @@ from typing import Any
 import requests
 import socketio
 import uvicorn
+
+import covert_addon
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
@@ -145,6 +147,7 @@ def socket_loop() -> None:
                     parsed = parse_live_item(item)
                     if parsed:
                         live[parsed["id"]] = parsed
+                covert_addon.feed(results, utc_now_iso())
                 bump(
                     lambda state: state.update(
                         live=live, live_updated_utc=utc_now_iso()
@@ -283,6 +286,13 @@ app = FastAPI(title="Tennis Live Scores")
 def start_workers() -> None:
     threading.Thread(target=socket_loop, daemon=True).start()
     threading.Thread(target=fixtures_loop, daemon=True).start()
+    covert_addon.start_threads()
+
+
+@app.get("/covert")
+def covert_state() -> JSONResponse:
+    return JSONResponse({"status": covert_addon.STATUS,
+                         "tickets": covert_addon.ledger_rows()})
 
 
 @app.get("/healthz")
